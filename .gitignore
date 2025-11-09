@@ -1,0 +1,10 @@
+# Virtual Environment (Kotak Perkakas)
+.venv/
+
+# Kunci Rahasia (API Keys)
+.env
+
+# Sampah Python
+__pycache__/
+*.pyc
+
