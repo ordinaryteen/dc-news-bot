@@ -2,12 +2,7 @@ import discord
 import os
 from dotenv import load_dotenv
 import asyncio
-try:
-    from agent import ask_gemini_agent
-except ImportError:
-    print("ERROR: Gagal import ask_gemini_agent dari agent.py.")
-    print("Pastikan file ada dan __init__.py ada di foldernya.")
-    exit()
+
 
 
 TARGET_SERVER_NAME = "ai-deepsearch-agency" 

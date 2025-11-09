@@ -1,60 +1,99 @@
 import os
 from dotenv import load_dotenv
 from googleapiclient.discovery import build
+import google.generativeai as genai
 
-# --- 1. SETUP & LOAD .env ---
-print("Menjalankan Google Custom Search Test...")
+# --- 1. SETUP & LOAD .env (HANYA UNTUK FILE INI) ---
+# Kita load .env di sini karena file ini butuh API keys
 script_dir = os.path.dirname(os.path.abspath(__file__))
 env_path = os.path.join(script_dir, ".env")
 load_dotenv(dotenv_path=env_path)
 
-
-# --- 2. AMBIL KEY DARI .env ---
-API_KEY = os.getenv('GOOGLE_SEARCH_API_KEY')
+# --- 2. AMBIL KEYS & KONFIGURASI ---
+SEARCH_API_KEY = os.getenv('GOOGLE_SEARCH_API_KEY')
 SEARCH_ENGINE_ID = os.getenv('SEARCH_ENGINE_ID')
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 
+if not all([SEARCH_API_KEY, SEARCH_ENGINE_ID, GEMINI_API_KEY]):
+    print("❌ ERROR (search_engine.py): Pastikan GOOGLE_SEARCH_API_KEY, SEARCH_ENGINE_ID, dan GEMINI_API_KEY ada di .env!")
+    # Kita raise error di sini biar bot utama gak jalan
+    raise ValueError("Missing critical API keys in .env")
 
-if not all([API_KEY, SEARCH_ENGINE_ID]):
-    print("❌ ERROR: Pastikan GOOGLE_SEARCH_API_KEY dan SEARCH_ENGINE_ID ada di .env!")
-    exit()
+try:
+    genai.configure(api_key=GEMINI_API_KEY)
+    gemini_model = genai.GenerativeModel('gemini-1.5-flash')
+    print("✅ (search_engine.py) Konfigurasi Gemini berhasil.")
+except Exception as e:
+    print(f"❌ ERROR (search_engine.py): Gagal konfigurasi Gemini. Error: {e}")
+    raise
 
-# --- 3. SIAPKAN PERTANYAAN ---
-TEST_QUERY = "US China trade war"
-
-def jalankan_custom_search(query):
+# --- --------------------------------- ---
+# --- FUNGSI 1: GOOGLE SEARCH (DARI KODE LAMA) ---
+# --- --------------------------------- ---
+def get_search_results(query: str) -> list:
+    """
+    Mengambil 5 hasil pencarian (snippet & link) dari Google Custom Search.
+    """
+    print(f"🕵️ (search_engine.py) Melakukan pencarian untuk: \"{query}\"")
     try:
-        # --- 4. BUAT KLIEN ---
-        service = build("customsearch", "v1", developerKey=API_KEY)
-
-        print(f"📡 Menghubungi Google Custom Search (ID: {SEARCH_ENGINE_ID})...")
-        print(f"Mengirim pertanyaan: \"{query}\"")
-
-        # --- 5. KIRIM API CALL ---
+        service = build("customsearch", "v1", developerKey=SEARCH_API_KEY)
         res = service.cse().list(
             q=query,
             cx=SEARCH_ENGINE_ID,
-            num=5 
+            num=5
         ).execute()
 
-        # --- 6. TAMPILKAN HASIL ---
-        if 'items' in res:
-            print("\n✅--- HASIL PENCARIAN ---")
-            for i, item in enumerate(res['items']):
-                print(f"  {i+1}. {item['title']}")
-                print(f"     Link: {item['link']}")
-                print(f"     Cuplikan: {item['snippet'].replace('...', '')}\n")
-        else:
-            print("\n❌--- GAGAL: Tidak ada hasil ditemukan. ---")
-            print("Pastikan SEARCH_ENGINE_ID lo udah di-setup di web Google CSE")
-            print("untuk nyari di Reuters & Bloomberg.")
+        if 'items' not in res:
+            print("⚠️ (search_engine.py) Peringatan: Google Search tidak menemukan hasil.")
+            return []
+
+        results = []
+        for item in res['items']:
+            results.append({
+                "snippet": item['snippet'].replace('\n', ' ').replace('...', ' '),
+                "link": item['link'],
+                "title": item['title']
+            })
+        print(f"✅ (search_engine.py) Google Search menemukan {len(results)} hasil.")
+        return results
 
     except Exception as e:
-        print(f"\n❌--- GAGAL ---")
-        print(f"Error: {e}")
-        print("\n--- KEMUNGKINAN PENYEBAB ---")
-        print("1. GOOGLE_SEARCH_API_KEY lo salah / belum di-enable.")
-        print("2. SEARCH_ENGINE_ID lo salah.")
+        print(f"❌ ERROR (search_engine.py) saat search: {e}")
+        return []
 
-# --- Jalankan fungsi utama ---
-if __name__ == "__main__":
-    jalankan_custom_search(TEST_QUERY)
+# --- --------------------------------- ---
+# --- FUNGSI 2: RANGKUMAN GEMINI (DARI KODE LAMA) ---
+# --- --------------------------------- ---
+def get_summary_from_gemini(search_results: list, user_query: str) -> str:
+    """
+    Mengirim konteks (hasil search) ke Gemini untuk dirangkum.
+    """
+    print(f"🤖 (search_engine.py) Meminta Gemini untuk merangkum...")
+    
+    context = ""
+    for i, item in enumerate(search_results):
+        context += f"Sumber {i+1} ({item['title']}):\n{item['snippet']}\nLink: {item['link']}\n\n"
+
+    prompt = f"""
+    Anda adalah seorang analis berita ekonomi yang cerdas.
+    Pertanyaan user: "{user_query}"
+
+    Berdasarkan 5 cuplikan berita terbaru di bawah ini, tolong buatkan rangkuman 1-2 paragraf yang menjawab pertanyaan user.
+    JANGAN mengarang. Jawaban harus berdasarkan cuplikan di bawah.
+    Sertakan juga 2-3 link sumber yang paling relevan di akhir jawabanmu.
+
+    --- CUPLIKAN BERITA ---
+    {context}
+    --- AKHIR CUPLIKAN ---
+
+    Rangkuman Jawaban Anda:
+    """
+
+    try:
+        response = gemini_model.generate_content(prompt)
+        summary = response.text
+        print("✅ (search_engine.py) Gemini berhasil membuat rangkuman.")
+        return summary
+    except Exception as e:
+        print(f"❌ ERROR (search_engine.py) saat generate rangkuman Gemini: {e}")
+        return "Maaf, terjadi kesalahan saat saya mencoba merangkum berita."
