@@ -1,5 +1,7 @@
 google-adk
 
+google-generativeai
+
 google-cloud-aiplatform
 google-cloud-discoveryengine
 
