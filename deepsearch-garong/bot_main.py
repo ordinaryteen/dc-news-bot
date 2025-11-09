@@ -1,6 +1,14 @@
 import discord
 import os
 from dotenv import load_dotenv
+import asyncio
+try:
+    from agent import ask_gemini_agent
+except ImportError:
+    print("ERROR: Gagal import ask_gemini_agent dari agent.py.")
+    print("Pastikan file ada dan __init__.py ada di foldernya.")
+    exit()
+
 
 TARGET_SERVER_NAME = "ai-deepsearch-agency" 
 TARGET_CHANNEL_NAME = "rangkuman-berita-dagang"
@@ -16,7 +24,6 @@ TOKEN = os.getenv('DISCORD_BOT_TOKEN')
 
 intents = discord.Intents.default()
 intents.message_content = True
-
 client = discord.Client(intents=intents)
 
 # --- Event Handler ---
@@ -30,16 +37,15 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
-    """Event when there is a new chat"""
-    if message.author == client.user: # avoid self loop
+    # FILTER: SELF, SERVER, AND CHANNEL
+    if message.author == client.user: 
         return
-
     if message.guild is None or message.guild.name != TARGET_SERVER_NAME:
         return
-
     if message.channel.name != TARGET_CHANNEL_NAME:
         return
 
+    
     print(f"Mendapatkan chat di server/channel yang benar: {message.content}")
     
     try:
