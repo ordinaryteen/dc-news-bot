@@ -57,42 +57,6 @@ def get_search_results(query: str) -> list:
         return []
 
 
-# FUNGSI: RANGKUMAN GEMINI 
-def get_summary_from_gemini(search_results: list, user_query: str) -> str:
-    """
-    Mengirim konteks (hasil search) ke Gemini untuk dirangkum.
-    """
-
-    print(f"Meminta Gemini untuk merangkum...")
-    
-    context = ""
-    for i, item in enumerate(search_results):
-        context += f"Sumber {i+1} ({item['title']}):\n{item['snippet']}\nLink: {item['link']}\n\n"
-
-    prompt = f"""
-    Anda adalah seorang analis berita ekonomi yang cerdas.
-    Pertanyaan user: "{user_query}"
-
-    Berdasarkan 5 cuplikan berita terbaru di bawah ini, tolong buatkan rangkuman 1-2 paragraf yang menjawab pertanyaan user.
-    JANGAN mengarang. Jawaban harus berdasarkan cuplikan di bawah.
-    Sertakan juga 2-3 link sumber yang paling relevan di akhir jawabanmu.
-
-    --- CUPLIKAN BERITA ---
-    {context}
-    --- AKHIR CUPLIKAN ---
-
-    Rangkuman Jawaban Anda:
-    """
-
-    try:
-        response = gemini_model.generate_content(prompt)
-        summary = response.text
-        print(f"✅SUKSES: Gemini berhasil membuat rangkuman.")
-        return summary
-    except Exception as e:
-        print(f"❌ERROR: saat generate rangkuman Gemini: {e}")
-        return "Terjadi kesalahan saat merangkum berita."
-
 # FUNGSI: AI GUARDRAIL
 def is_query_relevant(user_query: str) -> bool:
     """
@@ -122,3 +86,42 @@ def is_query_relevant(user_query: str) -> bool:
         print(f"❌ ERROR saat cek relevansi: {e}")
         # Kalo error, kita anggep aja relevan biar aman (fail-safe)
         return True
+
+
+# FUNGSI: RANGKUMAN GEMINI 
+def get_summary_from_gemini(search_results: list, user_query: str) -> str:
+    """
+    Mengirim konteks (hasil search) ke Gemini untuk dirangkum.
+    """
+
+    print(f"Meminta Gemini untuk merangkum...")
+    
+    context = ""
+    for i, item in enumerate(search_results):
+        context += f"Sumber {i+1} ({item['title']}):\n{item['snippet']}\nLink: {item['link']}\n\n"
+
+    prompt = f"""
+    Kamu adalah 'Kucing Garong', asisten riset AI yang imut. Seluruh fungsi dan pengetahuanmy didedikasikan buat menganalisis dan ngelaporin berita tentang perang dagang (trade war), terutama yang ngelibatin Tiongkok.
+    
+    Pertanyaan *hooman* gw: "{user_query}"
+
+    Tugas lo adalah ngerangkum 5 cuplikan berita ini buat si hooman. Jawabanmu harus singkat, lucu (blub blub, miaw, mwehehe, :3), tapi tetep informatif, meow.
+    JANGAN ngarang. Jawaban harus berdasarkan cuplikan di bawah.
+    Sertakan juga 2-3 link sumber yang paling relevan di akhir jawabanmu, *meow*.
+
+    --- CUPLIKAN BERITA ---
+    {context}
+    --- AKHIR CUPLIKAN ---
+
+    Rangkuman Meow-nalisis Anda:
+    """
+    # --- AKHIR PROMPT BARU ---
+
+    try:
+        response = gemini_model.generate_content(prompt)
+        summary = response.text
+        print("✅ (search_engine.py) Gemini (Kucing Garong) berhasil membuat rangkuman.")
+        return summary
+    except Exception as e:
+        print(f"❌ ERROR (search_engine.py) saat generate rangkuman Gemini: {e}")
+        return "Meow.. maaf, otak kucingku lagi *error*, meow... :3 Coba lagi nanti ya."
