@@ -4,7 +4,7 @@ import asyncio
 from dotenv import load_dotenv
 
 try:
-    from search_engine import get_search_results, get_summary_from_gemini
+    from search_engine import get_search_results, get_summary_from_gemini, is_query_relevant
 except ImportError:
     print("❌ ERROR: Gagal import 'search_engine.py'.")
     print("Pastikan file 'search_engine.py' ada di folder yang sama.")
@@ -57,21 +57,24 @@ async def on_message(message):
         user_query = message.content[len('!perangdagang '):].strip()
         
         if not user_query:
-            await message.channel.send("Harap masukkan pertanyaan setelah `!perangdagang `")
+            await message.channel.send("msukin pesan hbis `!perangdagang ` u stupid, bleee :P")
             return
 
         print(f"Mendapatkan command dari {message.author}: {user_query}")
         
         async with message.channel.typing():
-            await message.channel.send(f"Oke, `{message.author.display_name}`. Saya lagi cari berita dan bikin rangkuman untuk: \"{user_query}\"...")
+            if not is_query_relevant(user_query):
+                print("⚠️ Command ditolak (Off-topic).")
+                await message.channel.send("blub!!! 🐟, ak kucing garong yg cuma fokus ke berita perang dagang, jadi di luar *scope*-ku yaaa bleee :3")
+                return
+
+            await message.channel.send(f"blub blub 🐟, `{message.author.display_name}`. ak lagi cari berita dan bikin rangkuman buat: \"{user_query}\"...")
 
             try:
-                # --- INI DIA BEDANYA ---
-                # 1. Panggil fungsi impor (lebih bersih)
                 search_results = get_search_results(user_query) 
                 
                 if not search_results:
-                    await message.channel.send(f"Maaf, saya tidak menemukan artikel berita yang relevan untuk \"{user_query}\".")
+                    await message.channel.send(f"hei stupid, ak gk nemuin  artikel berita yang relevan buat pertanyaanmu :(")
                     return
 
                 summary = get_summary_from_gemini(search_results, user_query)
