@@ -3,13 +3,13 @@ import os
 import asyncio
 from dotenv import load_dotenv
 
-# --- BARU: Import fungsi-fungsi yang udah kita pisah ---
 try:
     from search_engine import get_search_results, get_summary_from_gemini
 except ImportError:
     print("❌ ERROR: Gagal import 'search_engine.py'.")
     print("Pastikan file 'search_engine.py' ada di folder yang sama.")
     exit()
+
 
 # --- Setup .env (HANYA UNTUK DISCORD TOKEN) ---
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -22,18 +22,16 @@ if not DISCORD_TOKEN:
     print("❌ ERROR: DISCORD_BOT_TOKEN tidak ditemukan di .env!")
     exit()
 
-# --- Nama Server & Channel (Kode lama lo) ---
+
 TARGET_SERVER_NAME = "ai-deepsearch-agency"
 TARGET_CHANNEL_NAME = "rangkuman-berita-dagang"
 
-# --- Setup Intent Discord (Kode lama lo) ---
 intents = discord.Intents.default()
 intents.message_content = True
 client = discord.Client(intents=intents)
 
-# --- ------------------------------ ---
-# --- EVENT ON_READY (SAMA) ---
-# --- ------------------------------ ---
+
+# --- EVENT ON_READY ---
 @client.event
 async def on_ready():
     print(f'Bot {client.user} online')
@@ -42,12 +40,10 @@ async def on_ready():
     print("Ketik '!perangdagang [pertanyaan lo]' untuk memulai.")
     print('------')
 
-# --- ------------------------------ ---
-# --- EVENT ON_MESSAGE (LEBIH BERSIH) ---
-# --- ------------------------------ ---
+# --- EVENT ON_MESSAGE ---
 @client.event
 async def on_message(message):
-    # Filter (kode lama lo)
+    # FILTER: SELF, SERVER, AND CHANNEL
     if message.author == client.user:
         return
     if message.guild is None or message.guild.name != TARGET_SERVER_NAME:
@@ -55,7 +51,7 @@ async def on_message(message):
     if message.channel.name != TARGET_CHANNEL_NAME:
         return
 
-    # Cek command (kode lama lo)
+    # TRIGGER
     if message.content.startswith('!perangdagang '):
         
         user_query = message.content[len('!perangdagang '):].strip()
@@ -78,10 +74,8 @@ async def on_message(message):
                     await message.channel.send(f"Maaf, saya tidak menemukan artikel berita yang relevan untuk \"{user_query}\".")
                     return
 
-                # 2. Panggil fungsi impor (lebih bersih)
                 summary = get_summary_from_gemini(search_results, user_query)
 
-                # 3. Kirim hasil (kode lama, udah bener)
                 embed = discord.Embed(
                     title=f"Analisis Perang Dagang: {user_query}",
                     description=summary,
@@ -95,7 +89,8 @@ async def on_message(message):
                 print(f"❌ ERROR di alur utama on_message: {e}")
                 await message.channel.send("Waduh, ada error internal. Coba lagi nanti ya.")
 
-# --- Run The Bot (Kode lama lo) ---
+
+# --- Run The Bot ---
 try:
     print("Mencoba menyalakan bot...")
     client.run(DISCORD_TOKEN)
