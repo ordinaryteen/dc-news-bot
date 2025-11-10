@@ -68,7 +68,7 @@ async def on_message(message):
                 await message.channel.send("blub!!! 🐟, ak kucing garong yg cuma fokus ke berita perang dagang, jadi di luar *scope*-ku yaaa bleee :3")
                 return
 
-            await message.channel.send(f"blub blub 🐟, `{message.author.display_name}`. ak lagi cari berita dan bikin rangkuman buat: \"{user_query}\"...")
+            await message.channel.send(f"blub blub 🐟, `{message.author.display_name}`. ak lagi cari berita dan bikin rangkuman buat pertanyaanmu...")
 
             try:
                 search_results = get_search_results(user_query) 
@@ -79,14 +79,7 @@ async def on_message(message):
 
                 summary = get_summary_from_gemini(search_results, user_query)
 
-                embed = discord.Embed(
-                    title=f"Analisis Perang Dagang: {user_query}",
-                    description=summary,
-                    color=discord.Color.blue()
-                )
-                embed.set_footer(text=f"Dirangkum oleh AI | Sumber: Google Search")
-                
-                await message.channel.send(embed=embed)
+                await message.channel.send(summary)
 
             except Exception as e:
                 print(f"❌ ERROR di alur utama on_message: {e}")
