@@ -5,8 +5,8 @@
 ---
 
 ### 🚀 Video Demo
-![Video Demo Kucing Garong](https://github.com/user-attachments/assets/b82c93d4-1375-4835-8c21-1478189fc930)
-
+![Image](https://github.com/user-attachments/assets/828d229a-4f89-4f9e-9302-4105483006e1)
+(maaf kalo burik wkwk)
 ---
 
 ### ✨ Fitur Utama
