@@ -5,16 +5,7 @@
 ---
 
 ### 🚀 Video Demo
-
-[GANTI SAYA DENGAN LINK VIDEO DEMO ANDA]
-
-> **Cara Menambahkan Video Demo (Penting!):**
-> 1.  Di *repository* GitHub-mu, klik tab "Issues", lalu "New Issue".
-> 2.  *Drag-and-drop* file video `.mp4` atau `.mov` (hasil *screen record*) ke dalam boks *comment*.
-> 3.  Tunggu GitHub selesai *upload*. Dia akan memberimu link URL.
-> 4.  Copy link itu.
-> 5.  Ganti `[GANTI SAYA DENGAN LINK VIDEO DEMO ANDA]` di atas dengan format ini: `![Video Demo](LINK_YANG_KAMU_COPY)`
-> 6.  (Tutup *issue* yang kamu buat tadi, gak usah di-*submit*).
+`https://github.com/user-attachments/assets/b82c93d4-1375-4835-8c21-1478189fc930`
 
 ---
 
