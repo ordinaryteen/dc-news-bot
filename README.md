@@ -5,7 +5,7 @@
 ---
 
 ### 🚀 Video Demo
-`https://github.com/user-attachments/assets/b82c93d4-1375-4835-8c21-1478189fc930`
+![Video Demo Kucing Garong](https://github.com/user-attachments/assets/b82c93d4-1375-4835-8c21-1478189fc930)
 
 ---
 
