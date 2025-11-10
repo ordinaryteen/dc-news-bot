@@ -21,7 +21,7 @@ if not all([SEARCH_API_KEY, SEARCH_ENGINE_ID, GEMINI_API_KEY]):
 
 try:
     genai.configure(api_key=GEMINI_API_KEY)
-    gemini_model = genai.GenerativeModel('gemini-1.5-flash')
+    gemini_model = genai.GenerativeModel('gemini-2.5-flash')
     print("✅ (search_engine.py) Konfigurasi Gemini berhasil.")
 except Exception as e:
     print(f"❌ ERROR (search_engine.py): Gagal konfigurasi Gemini. Error: {e}")
