@@ -92,3 +92,33 @@ def get_summary_from_gemini(search_results: list, user_query: str) -> str:
     except Exception as e:
         print(f"❌ERROR: saat generate rangkuman Gemini: {e}")
         return "Terjadi kesalahan saat merangkum berita."
+
+# FUNGSI: AI GUARDRAIL
+def is_query_relevant(user_query: str) -> bool:
+    """
+    Menggunakan AI untuk mengecek apakah query user RELEVAN dengan topik.
+    Ini adalah Panggilan AI #1.
+    """
+    print(f"🤖 (search_engine.py) Mengecek relevansi topik untuk: \"{user_query}\"")
+    
+    rule_prompt = f"""
+    Aturan Ketat:
+    1. Topik yang relevan adalah yang berhubungan LANGSUNG dengan 'perang dagang', 'kebijakan dagang', 'tarif', 'ekspor-impor', atau 'persaingan teknologi' antar negara (terutama Tiongkok dan AS).
+    2. Topik TIDAK relevan adalah SEMUA di luar itu (misal: "resep masakan", "ibu kota Prancis", "cara coding", "random chat").
+
+    Pertanyaan User: "{user_query}"
+
+    Berdasarkan aturan di atas, apakah pertanyaan user relevan? Jawab HANYA dengan 'RELEVAN' atau 'TIDAK RELEVAN'.
+    """
+    
+    try:
+        response = gemini_model.generate_content(rule_prompt)
+        decision = response.text.strip().upper()
+        
+        print(f"Keputusan AI: {decision}")
+        return decision == "RELEVAN"
+        
+    except Exception as e:
+        print(f"❌ ERROR saat cek relevansi: {e}")
+        # Kalo error, kita anggep aja relevan biar aman (fail-safe)
+        return True
